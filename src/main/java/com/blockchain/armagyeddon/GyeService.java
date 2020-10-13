@@ -1,6 +1,6 @@
 package com.blockchain.armagyeddon;
 
-import com.blockchain.armagyeddon.domain.Gye
+import com.blockchain.armagyeddon.domain.Gye;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,13 +59,18 @@ public class GyeService {
 
                 responseJson = new JSONObject(sb.toString());
 
-                JSONArray arr = responseJson.getJSONArray("array");
+                JSONArray arr = responseJson.getJSONArray("gye array");
 
-                for (JSONObject gye_Json : arr) {
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject gye_Json = arr.getJSONObject(i);
                     result.add(GyeService.parseFromJson(gye_Json));
 
                 }
 
+//                for (JSONObject gye_Json : arr) {
+//                    result.add(GyeService.parseFromJson(gye_Json));
+//
+//                }
 
             }
         } catch (MalformedURLException e) {
@@ -77,17 +82,21 @@ public class GyeService {
             e.printStackTrace();
         }
 
-
         return result;
     }
 
-    ;
-
-    public static Gye parseFromJson(JSONObject js) {
+    public static Gye parseFromJson(JSONObject jsonObject) {
         Gye result = new Gye();
         try {
-            result.setId(js.getLong("id"));
-            result.setInterest(js.getString("interest"));
+            result.setId(jsonObject.getLong("id"));
+            result.setType(jsonObject.getString("type"));
+            result.setInterest(jsonObject.getString("interest"));
+            result.setTitle(jsonObject.getString("title"));
+            result.setTargetMoney(jsonObject.getInt("target money"));
+            result.setPeriod(jsonObject.getInt("period"));
+            result.setTotalMember(jsonObject.getInt("total member"));
+            result.setState(jsonObject.getString("state"));
+            result.setMaster(jsonObject.getString("master"));
 
         } catch (JSONException e) {
             e.printStackTrace();
