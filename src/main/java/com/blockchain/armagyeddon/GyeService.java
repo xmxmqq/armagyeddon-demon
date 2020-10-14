@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,7 +139,7 @@ public class GyeService {
         String result = "";
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080//user-token";
+            String targetUrl = "http:localhost:8080/user-token";
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -164,6 +165,60 @@ public class GyeService {
             } else {
 
                 // 성공 후 응답 JSON 데이터받기
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                result = sb.toString();
+
+
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+
+    }
+
+    public static String updateGye(Long gyeId, String state, String payDay) {
+
+        String result = "";
+
+        try {
+            // BE url을 String으로 받아와서
+            String targetUrl = "http:localhost:8080/gye-state/" + Long.toString(gyeId);
+            // URL 설정
+            URL url = new URL(targetUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            var values = new HashMap<String, String>() {{
+                put("gyeId", gyeId.toString());
+                put("state", state);
+                put("payDay", payDay.toString());
+
+            }};
+
+            // http request 형식 설정
+            con.setRequestMethod("POST");
+
+            // 보내고 결과값 받기
+            int responseCode = con.getResponseCode();
+
+            // error 출력
+            if (responseCode == 400) {
+                System.out.println("400:: 해당 명령을 실행할 수 없음");
+            } else if (responseCode == 401) {
+                System.out.println("401:: X-Auth-Token Header가 잘못됨");
+            } else if (responseCode == 500) {
+                System.out.println("500:: 서버 에러, 문의 필요");
+            } else {
+
                 BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line = "";
