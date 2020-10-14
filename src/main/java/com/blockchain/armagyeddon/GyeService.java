@@ -21,15 +21,97 @@ import java.util.List;
 public class GyeService {
 
 
-    public static List<Gye> getGye_all() {
-        List<Gye> result = new ArrayList<>();
+    public static List<Gye> getAllGye() {
 
-        HttpURLConnection con = null;
-        JSONObject responseJson = null;
+        List<Gye> result = new ArrayList<>();
 
         try {
             // BE url을 String으로 받아와서
             String targetUrl = "http:localhost:8080/gye";
+            // URL 설정
+            URL url = new URL(targetUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            // http request 형식 설정
+            con.setRequestMethod("GET");
+
+            // 보내고 결과값 받기
+            int responseCode = con.getResponseCode();
+
+            // error 출력
+            if (responseCode == 400) {
+                System.out.println("400:: 해당 명령을 실행할 수 없음");
+            } else if (responseCode == 401) {
+                System.out.println("401:: X-Auth-Token Header가 잘못됨");
+            } else if (responseCode == 500) {
+                System.out.println("500:: 서버 에러, 문의 필요");
+            } else {
+
+                // 성공 후 응답 JSON 데이터받기
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                JSONObject responseJson = new JSONObject(sb.toString());
+
+                JSONArray arr = responseJson.getJSONArray("data array");
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject gye_Json = arr.getJSONObject(i);
+                    result.add(GyeService.parseFromJson(gye_Json));
+
+                }
+
+//                for (JSONObject gye_Json : arr) {
+//                    result.add(GyeService.parseFromJson(gye_Json));
+//
+//                }
+
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            System.out.println("not JSON Format response");
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public static Gye parseFromJson(JSONObject jsonObject) {
+        Gye result = new Gye();
+
+        try {
+            result.setId(jsonObject.getLong("id"));
+            result.setType(jsonObject.getString("type"));
+            result.setInterest(jsonObject.getString("interest"));
+            result.setTitle(jsonObject.getString("title"));
+            result.setTargetMoney(jsonObject.getInt("target money"));
+            result.setPeriod(jsonObject.getInt("period"));
+            result.setTotalMember(jsonObject.getInt("total member"));
+            result.setState(jsonObject.getString("state"));
+            result.setMaster(jsonObject.getString("master"));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static JSONObject getBalance() {
+
+
+        HttpURLConnection con;
+        JSONObject responseJson = null;
+
+        try {
+            // BE url을 String으로 받아와서
+            String targetUrl = "http:localhost:8080/user-token/{email}";
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -58,21 +140,8 @@ public class GyeService {
                 }
 
                 responseJson = new JSONObject(sb.toString());
-
-                JSONArray arr = responseJson.getJSONArray("gye array");
-
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject gye_Json = arr.getJSONObject(i);
-                    result.add(GyeService.parseFromJson(gye_Json));
-
-                }
-
-//                for (JSONObject gye_Json : arr) {
-//                    result.add(GyeService.parseFromJson(gye_Json));
-//
-//                }
-
             }
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -82,25 +151,30 @@ public class GyeService {
             e.printStackTrace();
         }
 
-        return result;
+        return responseJson;
+
     }
 
-    public static Gye parseFromJson(JSONObject jsonObject) {
-        Gye result = new Gye();
-        try {
-            result.setId(jsonObject.getLong("id"));
-            result.setType(jsonObject.getString("type"));
-            result.setInterest(jsonObject.getString("interest"));
-            result.setTitle(jsonObject.getString("title"));
-            result.setTargetMoney(jsonObject.getInt("target money"));
-            result.setPeriod(jsonObject.getInt("period"));
-            result.setTotalMember(jsonObject.getInt("total member"));
-            result.setState(jsonObject.getString("state"));
-            result.setMaster(jsonObject.getString("master"));
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
+//    public static String parseFromJson2(JSONObject responseJson) {
+//        String balance = new String();
+//
+//        try {
+//            balacne.setId(jsonObject.getLong("id"));
+//            result.setType(jsonObject.getString("type"));
+//            result.setInterest(jsonObject.getString("interest"));
+//            result.setTitle(jsonObject.getString("title"));
+//            result.setTargetMoney(jsonObject.getInt("target money"));
+//            result.setPeriod(jsonObject.getInt("period"));
+//            result.setTotalMember(jsonObject.getInt("total member"));
+//            result.setState(jsonObject.getString("state"));
+//            result.setMaster(jsonObject.getString("master"));
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return result;
+//
+//
+//        return balance;
+//    }
 }
