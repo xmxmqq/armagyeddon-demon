@@ -37,6 +37,7 @@ public class CronTable {
 
             //  2.1 계의 상태를 가져온다.
             String state = gye.getState();
+            double targetMonthFee = gye.getTargetMoney() / (gye.getTotalMember() - 1);
 
             //  2.2 계의 상태가 active 라면
             if (state.equals("wait")) {
@@ -45,9 +46,33 @@ public class CronTable {
                 List<Member> members = gye.getMembers();
 
 
-                 //   2.2.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수금을 요청한다.
-                //   2.2.3 수금시, 계의 상태자 wait면, active로 변경한다.
-                //   2.2.3 잔액이 부족하면, 별도 처리 없음
+                //   2.2.2 잔액이 부족하면, 별도 처리 없음
+                boolean isCollectable = true;
+                for (Member mem : members) {
+
+//                  double balance = Double.parseDouble(GyeService.getBalanceOf(mem.getEmail()));
+                    double balance = GyeService.getBalanceOf(mem.getEmail());
+                    if (balance < targetMonthFee) {
+                        isCollectable = false;
+                        break;
+                    }
+                }
+
+                if (isCollectable == false) {
+                    break;
+                }
+
+                //   2.2.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수금을 요청한다.
+                for (Member mem : members) {
+
+                    GyeService.sendToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                }
+
+                //   2.2.3 수금완료 후, payDay 추출, BE에서 계의 상태를 active로 변경한다. (계 활성화)
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                Date now = new Date();
+                String strDate = sdf.format(now);
+                System.out.println("Java cron aJob expression: " + strDate);
 
             }
             if (state.equals("active")) {
