@@ -21,8 +21,6 @@ public class CronTable {
     @Scheduled(cron = "0 0 0 * * ?")
     public void CronJob() {
 
-        // 저축계의 경
-        // 모든 참여자의 balance == targetMoney/(totalMember - 1) 시에 최초 수금
         // 수금 후 바로 turn1에게 송금
         // status = wait에서 active로 바뀌도록
         // 최초 수송금 날짜를 payDay로
@@ -62,12 +60,13 @@ public class CronTable {
                     break;
                 }
 
-                //   2.2.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수금을 요청한다.
+                //   2.2.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
                 for (Member mem : members) {
-                    GyeService.sendToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                    GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                    GyeService.sendToken(gye.getId(),mem.getEmail(),Integer.toString(gye.getTargetMoney()));
                 }
 
-                //   2.2.3 수금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
+                //   2.2.3 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
                 Date payDay = new Date();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                 String strDate = sdf.format(payDay);
@@ -79,8 +78,10 @@ public class CronTable {
             if (state.equals("active")) {
                 //   2.2.1 계의 payDay를 가져온다.
                 LocalDateTime payDay = gye.getPayDay();
+
                 //   2.2.2 계의 payday "일"을 가져온다
-                //   2.2.3 현재 시간의 "일"을 가져온간
+
+                //   2.2.3 현재 시간의 "일"을 가져온다.
                 //   2.2.4 현재시간의 "일"이 payday 의"일" 보다 크면 수금가능.
 
                 //   2.2.5 수금이 가능하면
@@ -98,11 +99,6 @@ public class CronTable {
 
         }
 
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        Date now = new Date();
-        String strDate = sdf.format(now);
-        System.out.println("Java cron aJob expression: " + strDate);
     }
 
     // 고정된 지연으로 작업 예약
