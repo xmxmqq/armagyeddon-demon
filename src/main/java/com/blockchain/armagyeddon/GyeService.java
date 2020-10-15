@@ -1,10 +1,16 @@
 package com.blockchain.armagyeddon;
 
 import com.blockchain.armagyeddon.domain.Gye;
+import com.blockchain.armagyeddon.domain.Member;
+import javassist.expr.NewArray;
+import net.minidev.json.JSONValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
@@ -13,7 +19,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,14 +27,13 @@ import java.util.List;
 @Transactional
 public class GyeService {
 
-
     public static List<Gye> getAllGye() {
 
         List<Gye> result = new ArrayList<>();
 
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080/gye";
+            String targetUrl = "http://localhost:8080/gye";
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -57,9 +61,12 @@ public class GyeService {
                     sb.append(line);
                 }
 
-                JSONObject responseJson = new JSONObject(sb.toString());
+                //Object obj = JSONValue.parse(sb.toString());
+                JSONArray arr = new JSONArray(sb.toString());
 
-                JSONArray arr = responseJson.getJSONArray("data array");
+                //JSONObject responseJson = new JSONArray(sb.toString());//new JSONObject(sb.toString());
+
+                //JSONArray arr = responseJson.getJSONArray("data array");
 
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject gye_Json = arr.getJSONObject(i);
@@ -93,7 +100,7 @@ public class GyeService {
 
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080/user-token/" + email;
+            String targetUrl = "http://localhost:8080/user-token/" + email;
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -140,7 +147,7 @@ public class GyeService {
         String result = "";
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080/user-token";
+            String targetUrl = "http://localhost:8080/user-token";
 
             // URL 설정
             URL url = new URL(targetUrl);
@@ -191,7 +198,7 @@ public class GyeService {
         String result = "";
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080/gye-token";
+            String targetUrl = "http://localhost:8080/gye-token";
 
             // URL 설정
             URL url = new URL(targetUrl);
@@ -243,7 +250,7 @@ public class GyeService {
 
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http:localhost:8080/gye-state/" + Long.toString(gyeId);
+            String targetUrl = "http://localhost:8080/gye-state/" + Long.toString(gyeId);
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -300,11 +307,22 @@ public class GyeService {
             result.setType(jsonObject.getString("type"));
             result.setInterest(jsonObject.getString("interest"));
             result.setTitle(jsonObject.getString("title"));
-            result.setTargetMoney(jsonObject.getInt("target money"));
+            result.setTargetMoney(jsonObject.getInt("targetMoney"));
             result.setPeriod(jsonObject.getInt("period"));
-            result.setTotalMember(jsonObject.getInt("total member"));
+            result.setTotalMember(jsonObject.getInt("totalMember"));
             result.setState(jsonObject.getString("state"));
             result.setMaster(jsonObject.getString("master"));
+
+            List<Member> members = new ArrayList();
+            for (int i=0; i < jsonObject.getJSONArray("members").length(); i++) {
+                JSONObject json_mem = jsonObject.getJSONArray("members").getJSONObject(i);
+                Member mem= new Member();
+                mem.setEmail(json_mem.getString("email"));
+                mem.setName(json_mem.getString("name"));
+                mem.setTurn(json_mem.getInt("turn"));
+                members.add(mem);
+            }
+            result.setMembers(members);
 
         } catch (JSONException e) {
             e.printStackTrace();

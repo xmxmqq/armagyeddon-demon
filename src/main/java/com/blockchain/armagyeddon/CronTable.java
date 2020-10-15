@@ -101,18 +101,19 @@ public class CronTable {
 
     }
 
-    // 고정된 지연으로 작업 예약
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
-    public void scheduleFixedDelayTask() {
-
-        System.out.println("Fixed delay task - " + System.currentTimeMillis() / 1000);
-    }
+//    // 고정된 지연으로 작업 예약
+//    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
+//    public void scheduleFixedDelayTask() {
+//
+//        System.out.println("Fixed delay task - " + System.currentTimeMillis() / 1000);
+//    }
 
     // 고정된 속도로 작업 예약
     @Scheduled(fixedRate = 1000)
     public void scheduleFixedRateTask() {
 
         System.out.println("Fixed rate task - " + System.currentTimeMillis() / 1000);
+        CronJob();
     }
 
 }
