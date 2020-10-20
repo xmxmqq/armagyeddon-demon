@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,6 +27,72 @@ import java.util.List;
 @Service
 @Transactional
 public class GyeService {
+
+    static String JWT;
+
+    public static String getJWT(){
+
+        String result="";
+        try {
+            // BE url을 String으로 받아와서
+            String targetUrl = "http://localhost:8080/authenticate";
+
+            // URL 설정
+            URL url = new URL(targetUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            JSONObject userInfo = new JSONObject();
+
+            userInfo.put("email", "admin@naver.com");
+            userInfo.put("password", "password");
+
+
+            // http request 형식 설정
+            con.setRequestMethod("POST");
+
+            con.setDoOutput(true);
+            OutputStream os = con.getOutputStream();
+            os.write(userInfo.toString().getBytes("UTF-8"));
+            os.flush();
+
+            // 보내고 결과값 받기
+            int responseCode = con.getResponseCode();
+
+            // error 출력
+            if (responseCode == 400) {
+                System.out.println("400:: 해당 명령을 실행할 수 없음");
+            } else if (responseCode == 401) {
+                System.out.println("401:: X-Auth-Token Header가 잘못됨");
+            } else if (responseCode == 500) {
+                System.out.println("500:: 서버 에러, 문의 필요");
+            } else {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                JSONObject jwt_json = new JSONObject(sb.toString());
+                result = jwt_json.getString("token");
+
+
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JWT = result;
+        return result;
+
+    }
 
     public static List<Gye> getAllGye() {
 
@@ -40,6 +107,7 @@ public class GyeService {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             // http request 형식 설정
             con.setRequestMethod("GET");
+            con.addRequestProperty("Authorization","Bearer "+JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -107,6 +175,7 @@ public class GyeService {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             // http request 형식 설정
             con.setRequestMethod("GET");
+            con.addRequestProperty("Authorization","Bearer "+JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -160,6 +229,7 @@ public class GyeService {
             }};
             // http request 형식 설정
             con.setRequestMethod("PUT");
+            con.addRequestProperty("Authorization","Bearer "+JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -211,6 +281,7 @@ public class GyeService {
             }};
             // http request 형식 설정
             con.setRequestMethod("PUT");
+            con.addRequestProperty("Authorization","Bearer "+JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -265,6 +336,7 @@ public class GyeService {
 
             // http request 형식 설정
             con.setRequestMethod("POST");
+            con.addRequestProperty("Authorization","Bearer "+JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
