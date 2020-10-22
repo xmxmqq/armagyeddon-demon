@@ -54,7 +54,7 @@ public class CronTable {
 
 //                  double balance = Double.parseDouble(GyeService.getBalanceOf(mem.getEmail()));
                     double balance = GyeService.getBalanceOf(mem.getEmail());
-                    if (balance < targetMonthFee) {
+                    if (balance > targetMonthFee) {
                         isCollectable = false;
                         break;
                     }

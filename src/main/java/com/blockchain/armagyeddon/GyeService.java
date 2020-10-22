@@ -2,15 +2,10 @@ package com.blockchain.armagyeddon;
 
 import com.blockchain.armagyeddon.domain.Gye;
 import com.blockchain.armagyeddon.domain.Member;
-import javassist.expr.NewArray;
-import net.minidev.json.JSONValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import javax.transaction.Transactional;
 import java.io.BufferedReader;
@@ -197,7 +192,7 @@ public class GyeService {
                     sb.append(line);
                 }
 
-//                    result = sb.toString();
+                result = Double.parseDouble(sb.toString());
 
             }
         } catch (MalformedURLException e) {
