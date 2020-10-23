@@ -16,7 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -25,9 +24,9 @@ public class GyeService {
 
     static String JWT;
 
-    public static String getJWT(){
+    public static String getJWT() {
 
-        String result="";
+        String result = "";
         try {
             // BE url을 String으로 받아와서
             String targetUrl = "http://localhost:8080/authenticate";
@@ -102,7 +101,7 @@ public class GyeService {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             // http request 형식 설정
             con.setRequestMethod("GET");
-            con.addRequestProperty("Authorization","Bearer "+JWT);
+            con.addRequestProperty("Authorization", "Bearer " + JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -170,7 +169,7 @@ public class GyeService {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             // http request 형식 설정
             con.setRequestMethod("GET");
-            con.addRequestProperty("Authorization","Bearer "+JWT);
+            con.addRequestProperty("Authorization", "Bearer " + JWT);
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -217,14 +216,23 @@ public class GyeService {
             URL url = new URL(targetUrl);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            var values = new HashMap<String, String>() {{
-                put("email", email);
-                put("gyeId", gyeId.toString());
-                put("amount", amount);
-            }};
+
             // http request 형식 설정
             con.setRequestMethod("PUT");
-            con.addRequestProperty("Authorization","Bearer "+JWT);
+            con.setRequestProperty("Authorization", "Bearer " + JWT);
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            JSONObject val = new JSONObject();
+            val.put("gyeId", gyeId.toString());
+            val.put("email", email);
+            val.put("amount", amount);
+
+            con.setDoOutput(true);
+            OutputStream os = con.getOutputStream();
+            os.write(val.toString().getBytes("UTF-8"));
+            os.flush();
+
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -252,6 +260,8 @@ public class GyeService {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         return result;
@@ -269,14 +279,23 @@ public class GyeService {
             URL url = new URL(targetUrl);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            var values = new HashMap<String, String>() {{
-                put("gyeId", gyeId.toString());
-                put("email", email);
-                put("amount", amount);
-            }};
+
             // http request 형식 설정
             con.setRequestMethod("PUT");
-            con.addRequestProperty("Authorization","Bearer "+JWT);
+            con.setRequestProperty("Authorization", "Bearer " + JWT);
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            JSONObject val = new JSONObject();
+            val.put("gyeId", gyeId.toString());
+            val.put("email", email);
+            val.put("amount", amount);
+
+            con.setDoOutput(true);
+            OutputStream os = con.getOutputStream();
+            os.write(val.toString().getBytes("UTF-8"));
+            os.flush();
+
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -305,11 +324,14 @@ public class GyeService {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return result;
 
     }
 
+    // 계 상태 변경
     public static String updateGye(Long gyeId, String state, String payDay) {
 
         String result = "";
@@ -322,16 +344,22 @@ public class GyeService {
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
-            var values = new HashMap<String, String>() {{
-                put("gyeId", gyeId.toString());
-                put("state", state);
-                put("payDay", payDay.toString());
-
-            }};
-
             // http request 형식 설정
             con.setRequestMethod("POST");
-            con.addRequestProperty("Authorization","Bearer "+JWT);
+            con.setRequestProperty("Authorization", "Bearer " + JWT);
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+
+            JSONObject val = new JSONObject();
+            val.put("gyeId", gyeId.toString());
+            val.put("state", state);
+            val.put("payDay", payDay.toString());
+
+            con.setDoOutput(true);
+            OutputStream os = con.getOutputStream();
+            os.write(val.toString().getBytes("UTF-8"));
+            os.flush();
 
             // 보내고 결과값 받기
             int responseCode = con.getResponseCode();
@@ -359,6 +387,8 @@ public class GyeService {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         return result;
@@ -381,9 +411,9 @@ public class GyeService {
             result.setMaster(jsonObject.getString("master"));
 
             List<Member> members = new ArrayList();
-            for (int i=0; i < jsonObject.getJSONArray("members").length(); i++) {
+            for (int i = 0; i < jsonObject.getJSONArray("members").length(); i++) {
                 JSONObject json_mem = jsonObject.getJSONArray("members").getJSONObject(i);
-                Member mem= new Member();
+                Member mem = new Member();
                 mem.setEmail(json_mem.getString("email"));
                 mem.setName(json_mem.getString("name"));
                 mem.setTurn(json_mem.getInt("turn"));

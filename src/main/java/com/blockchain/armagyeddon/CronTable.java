@@ -54,7 +54,7 @@ public class CronTable {
 
 //                  double balance = Double.parseDouble(GyeService.getBalanceOf(mem.getEmail()));
                     double balance = GyeService.getBalanceOf(mem.getEmail());
-                    if (balance > targetMonthFee) {
+                    if (balance < targetMonthFee) {
                         isCollectable = false;
                         break;
                     }
@@ -83,7 +83,7 @@ public class CronTable {
 
             }
 
-            //  4. 계의 상태가 expired 라면
+            //  4. 계의 상태가 active 라면
             if (state.equals("active")) {
 
                 //   4.1 계의 payDay를 가져온다.
@@ -151,7 +151,7 @@ public class CronTable {
 //    }
 
     // 고정된 속도로 작업 예약
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 10000)
     public void scheduleFixedRateTask() {
 
         System.out.println("Fixed rate task - " + System.currentTimeMillis() / 1000);
