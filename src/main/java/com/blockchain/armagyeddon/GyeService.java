@@ -318,7 +318,6 @@ public class GyeService {
 
                 result = sb.toString();
 
-
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -336,6 +335,8 @@ public class GyeService {
 
         String result = "";
 
+        System.out.println(state);
+
         try {
             // BE url을 String으로 받아와서
             String targetUrl = "http://localhost:8080/gye-state/" + Long.toString(gyeId);
@@ -346,6 +347,7 @@ public class GyeService {
 
             // http request 형식 설정
             con.setRequestMethod("POST");
+            System.out.println(JWT);
             con.setRequestProperty("Authorization", "Bearer " + JWT);
             con.setRequestProperty("Content-Type", "application/json; utf-8");
             con.setRequestProperty("Accept", "application/json");
@@ -354,7 +356,7 @@ public class GyeService {
             JSONObject val = new JSONObject();
             val.put("gyeId", gyeId.toString());
             val.put("state", state);
-            val.put("payDay", payDay.toString());
+            val.put("payDay", payDay);
 
             con.setDoOutput(true);
             OutputStream os = con.getOutputStream();

@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -34,15 +35,18 @@ public class CronTable {
             //  1. 계의 상태를 가져온다.
             String state = gye.getState();
 
+            //  1-1. 계원이 전부 찼는가?
+
             //   2. 계에 있는 멤버 정보로 잔액을 조회한다.
             List<Member> members = gye.getMembers();
 
             // 한 달에 1인에게 수금되는 액수
             double targetMonthFee = gye.getTargetMoney() / (gye.getTotalMember() - 1);
 
+
             boolean isCollectable = true;
 
-            //  3. 계의 상태가 active 라면
+            //  3. 계의 상태가 wait 라면
             if (state.equals("wait")) {
 
 //                //   3.1 계에 있는 멤버 정보로 잔액을 조회한다.
@@ -74,12 +78,12 @@ public class CronTable {
 
                 }
                 //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
-                LocalDateTime payDay = LocalDateTime.now();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                Date payDay = new Date();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
                 String strDate = sdf.format(payDay);
                 System.out.println("the gye starts at : " + strDate);
 
-                GyeService.updateGye(gye.getId(), "active", "strDate");
+                GyeService.updateGye(gye.getId(), "active", strDate);
 
             }
 
@@ -144,14 +148,14 @@ public class CronTable {
     }
 
 //    // 고정된 지연으로 작업 예약
-//    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
+//    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 10)
 //    public void scheduleFixedDelayTask() {
 //
 //        System.out.println("Fixed delay task - " + System.currentTimeMillis() / 1000);
 //    }
 
     // 고정된 속도로 작업 예약
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 60 * 60 * 1000)
     public void scheduleFixedRateTask() {
 
         System.out.println("Fixed rate task - " + System.currentTimeMillis() / 1000);
