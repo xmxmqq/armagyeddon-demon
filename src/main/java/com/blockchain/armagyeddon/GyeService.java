@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -411,6 +412,11 @@ public class GyeService {
             result.setTotalMember(jsonObject.getInt("totalMember"));
             result.setState(jsonObject.getString("state"));
             result.setMaster(jsonObject.getString("master"));
+            if( jsonObject.getString("payDay") == "null"){
+                result.setPayDay(null);
+            }else {
+                result.setPayDay(LocalDateTime.parse(jsonObject.getString("payDay")));
+            }
 
             List<Member> members = new ArrayList();
             for (int i = 0; i < jsonObject.getJSONArray("members").length(); i++) {
