@@ -32,14 +32,16 @@ public class CronTable {
         // C. 각 계에 대해 다음과 같은 처리를 한다.
         for (Gye gye : gyeList) {
 
-            //  1. 계의 상태를 가져온다.
-            String state = gye.getState();
-
+            // D. 계원이 모두 참여했는 지 확인한다.
             int totalMember = gye.getTotalMember();
 
             if (totalMember != gye.getMembers().size()) {
                 continue;
             }
+
+            //   1. 계의 상태를 가져온다.
+            String state = gye.getState();
+
 
             //   2. 계에 있는 멤버 정보로 잔액을 조회한다.
             List<Member> members = gye.getMembers();
@@ -96,7 +98,7 @@ public class CronTable {
                 LocalDateTime today = LocalDateTime.from(LocalDateTime.now());
 
                 //   4.4 현재시간의 "일"이 payday 의"일" 보다 클 때
-                if (payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue()){
+                if (payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue()) {
 
                     //   4.4.1 잔액 조회
                     for (Member mem : members) {
