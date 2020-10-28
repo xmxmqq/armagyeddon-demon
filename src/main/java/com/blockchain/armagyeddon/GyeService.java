@@ -226,7 +226,7 @@ public class GyeService {
 
             JSONObject val = new JSONObject();
             val.put("gyeId", gyeId.toString());
-            val.put("email", email);
+            val.put("userEmail", email);
             val.put("amount", amount);
 
             con.setDoOutput(true);
@@ -289,7 +289,7 @@ public class GyeService {
 
             JSONObject val = new JSONObject();
             val.put("gyeId", gyeId.toString());
-            val.put("email", email);
+            val.put("userEmail", email);
             val.put("amount", amount);
 
             con.setDoOutput(true);

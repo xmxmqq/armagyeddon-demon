@@ -47,7 +47,7 @@ public class CronTable {
             List<Member> members = gye.getMembers();
 
             // 한 달에 1인에게 수금되는 액수
-            double targetMonthFee = gye.getTargetMoney() / (gye.getTotalMember() - 1);
+            Long targetMonthFee = Long.valueOf(Math.round(gye.getTargetMoney() / (gye.getTotalMember() - 1)));
 
             //  3. 계의 상태가 wait 라면
             if (state.equals("wait")) {
@@ -75,7 +75,7 @@ public class CronTable {
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
 
                     } else {
-                        GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                     }
                 }
                 //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
