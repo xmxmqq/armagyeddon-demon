@@ -2,6 +2,7 @@ package com.blockchain.armagyeddon;
 
 import com.blockchain.armagyeddon.domain.Gye;
 import com.blockchain.armagyeddon.domain.Member;
+import lombok.ToString;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
