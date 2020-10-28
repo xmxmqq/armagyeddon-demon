@@ -8,7 +8,6 @@ import com.blockchain.armagyeddon.domain.Member;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
@@ -96,6 +95,7 @@ public class CronTable {
 
                 //   4.3 현재 시간의 "일"을 가져온다.
                 LocalDateTime today = LocalDateTime.from(LocalDateTime.now());
+                long nowTurn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths() + 1;
 
                 //   4.4 현재시간의 "일"이 payday 의"일" 보다 클 때
                 if (payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue()) {
@@ -115,26 +115,42 @@ public class CronTable {
                     }
 
                     //   4.4.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
-                    long nowTurn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths() + 1;
+
 
                     for (Member mem : members) {
                         if (mem.getTurn() == nowTurn) {
                             GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
                         } else {
-                            GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                            GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                         }
 
                     }
 
                     //   2.2.6 active에서 expired로 상태 변경
-                } else if (gye.getPeriod() <= Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths()) {
+                }
+
+                else {
+                    isCollectable = false;
+                    continue;
+                }
+
+                Long monnnn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths();
+
+                if (gye.getPeriod() <= nowTurn) {
+
+//                    LocalDateTime expiredDay = LocalDateTime.now();
+//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+//                    String strDate = sdf.format(expiredDay);
+//                    System.out.println("the gye ended at : " + strDate);
+//
+//                    GyeService.updateGye(gye.getId(), "expired", "strDate");
+
 
                     LocalDateTime expiredDay = LocalDateTime.now();
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                    String strDate = sdf.format(expiredDay);
+                    String strDate = expiredDay.toString();
                     System.out.println("the gye ended at : " + strDate);
 
-                    GyeService.updateGye(gye.getId(), "expired", "strDate");
+                    GyeService.updateGye(gye.getId(), "expired", gye.getPayDay().toString());
 
                 }
             }
