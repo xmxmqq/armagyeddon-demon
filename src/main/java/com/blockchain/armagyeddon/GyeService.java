@@ -399,8 +399,8 @@ public class GyeService {
     }
 
     //이율계산
-    public static double calculateMoney(Long gyeId, String email, int period) {
-        double result = 0;
+    public static long calculateMoney(Long gyeId, String email, int period) {
+        long result = 0;
 
         try {
             // BE url을 String으로 받아와서
@@ -438,7 +438,7 @@ public class GyeService {
 
                 }
 
-                result = Double.parseDouble(sb.toString());
+                result = Long.valueOf(sb.toString());
 
 
             }
