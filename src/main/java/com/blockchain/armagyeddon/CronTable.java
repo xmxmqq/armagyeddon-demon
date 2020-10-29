@@ -20,6 +20,8 @@ public class CronTable {
     @Scheduled(cron = "0 0 0 * * ?")
     public void CronJob() {
 
+        GyeService gyeService;
+
         boolean isCollectable = true;
 
         // A. 로그인 (토큰 받아오기)
@@ -46,7 +48,7 @@ public class CronTable {
             List<Member> members = gye.getMembers();
 
             // 한 달에 1인에게 수금되는 액수
-            Long targetMonthFee = Long.valueOf(Math.round(gye.getTargetMoney() / (gye.getTotalMember() - 1)));
+            double targetMonthFee = Long.valueOf(Math.round(gye.getTargetMoney() / (gye.getTotalMember() - 1)));
 
             //  3. 계의 상태가 wait 라면
             if (state.equals("wait")) {
@@ -54,6 +56,9 @@ public class CronTable {
                 //   3.2 잔액이 부족하면, 별도 처리 없음
                 for (Member mem : members) {
 
+                    targetMonthFee = (gye.getType().equals("낙찰계") ?
+                            GyeService.calculateMoney(gye.getId(), mem.getEmail(), 0) :
+                            targetMonthFee);
                     double balance = GyeService.getBalanceOf(mem.getEmail());
 
                     if (balance < targetMonthFee) {
@@ -67,22 +72,39 @@ public class CronTable {
                 }
 
                 //   3.3 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
-                for (Member mem : members) {
 
-                    if (mem.getTurn() == 1) {
+                if (gye.getType() == "저축계") {
+                    for (Member mem : members) {
 
-                        GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+                        if (mem.getTurn() == 1) {
 
-                    } else {
-                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                            GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+
+                        } else {
+                            GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                        }
+                    }
+                }else if(gye.getType()=="낙찰계"){
+                    for (Member mem : members) {
+
+                        if (mem.getTurn() == 1) {
+
+                            GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+                            GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+
+                        } else {
+                            GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
+                        }
                     }
                 }
-                //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
-                LocalDateTime payDay = LocalDateTime.now();
-                String strDate = payDay.toString();
-                System.out.println("the gye starts at : " + strDate);
+                    //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
+                    LocalDateTime payDay = LocalDateTime.now();
+                    String strDate = payDay.toString();
+                    System.out.println("the gye starts at : " + strDate);
 
-                GyeService.updateGye(gye.getId(), "active", strDate);
+                    GyeService.updateGye(gye.getId(), "active", strDate);
+
+
 
             }
 
@@ -104,6 +126,9 @@ public class CronTable {
                     for (Member mem : members) {
 
                         double balance = GyeService.getBalanceOf(mem.getEmail());
+                        targetMonthFee = ( gye.getType().equals("낙찰계") ?
+                                GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
+                                targetMonthFee );
                         if (balance < targetMonthFee) {
                             isCollectable = false;
                             break;
@@ -121,7 +146,7 @@ public class CronTable {
                         if (mem.getTurn() == nowTurn) {
                             GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
                         } else {
-                            GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                            GyeService.collectToken(mem.getEmail(), gye.getId(), Double.toString(targetMonthFee));
                         }
 
                     }
