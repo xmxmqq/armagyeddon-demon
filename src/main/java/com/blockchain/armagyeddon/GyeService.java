@@ -2,7 +2,6 @@ package com.blockchain.armagyeddon;
 
 import com.blockchain.armagyeddon.domain.Gye;
 import com.blockchain.armagyeddon.domain.Member;
-import lombok.ToString;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +25,7 @@ public class GyeService {
 
     static String JWT;
 
+    // admin@naver.com 계정 JWT 가져오기
     public static String getJWT() {
 
         String result = "";
@@ -90,13 +90,14 @@ public class GyeService {
 
     }
 
-    public static List<Gye> getAllGye() {
+    // state가 wait, active인 계만 조회
+    public static List<Gye> getValidateGye() {
 
         List<Gye> result = new ArrayList<>();
 
         try {
             // BE url을 String으로 받아와서
-            String targetUrl = "http://localhost:8080/gye";
+            String targetUrl = "http://localhost:8080/validate-gye";
             // URL 설정
             URL url = new URL(targetUrl);
 
@@ -156,6 +157,7 @@ public class GyeService {
         return result;
     }
 
+    // 멤버 잔여토큰 조회
     public static double getBalanceOf(String email) {
 //        public static double getBalanceOf (String email){
 
@@ -207,7 +209,7 @@ public class GyeService {
 
     }
 
-    // 수금
+    // 수금 (member -> gye)
     public static String collectToken(String email, Long gyeId, String amount) {
         String result = "";
         try {
@@ -270,7 +272,7 @@ public class GyeService {
 
     }
 
-    // 송금
+    // 송금 (gye -> member)
     public static String sendToken(Long gyeId, String email, String amount) {
         String result = "";
         try {
@@ -332,7 +334,7 @@ public class GyeService {
 
     }
 
-    // 계 상태 변경
+    // 계 state 변경 (wait -> active -> expired)
     public static String updateGye(Long gyeId, String state, String payDay) {
 
         String result = "";
@@ -435,6 +437,5 @@ public class GyeService {
         }
         return result;
     }
-
 
 }

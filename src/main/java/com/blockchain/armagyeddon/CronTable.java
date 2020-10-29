@@ -26,21 +26,19 @@ public class CronTable {
         GyeService.getJWT();
 
         // B. 전체 계 정보를 받아온다.
-        List<Gye> gyeList = GyeService.getAllGye();
+        List<Gye> gyeList = GyeService.getValidateGye();
 
         // C. 각 계에 대해 다음과 같은 처리를 한다.
         for (Gye gye : gyeList) {
 
-            // D. 계원이 모두 참여했는 지 확인한다.
+            // D. 참여 인원이 갖춰졌는지 확인한다.
             int totalMember = gye.getTotalMember();
-
             if (totalMember != gye.getMembers().size()) {
                 continue;
             }
 
             //   1. 계의 상태를 가져온다.
             String state = gye.getState();
-
 
             //   2. 계에 있는 멤버 정보로 잔액을 조회한다.
             List<Member> members = gye.getMembers();
@@ -51,7 +49,7 @@ public class CronTable {
             //  3. 계의 상태가 wait 라면
             if (state.equals("wait")) {
 
-                //   3.2 잔액이 부족하면, 별도 처리 없음
+                //   3.2 잔액 확인
                 for (Member mem : members) {
 
                     double balance = GyeService.getBalanceOf(mem.getEmail());
@@ -68,22 +66,20 @@ public class CronTable {
 
                 //   3.3 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
                 for (Member mem : members) {
-
                     if (mem.getTurn() == 1) {
-
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
-
                     } else {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                     }
                 }
-                //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
+
+                //   3.4 수송금완료 후, payDay 추출
                 LocalDateTime payDay = LocalDateTime.now();
                 String strDate = payDay.toString();
                 System.out.println("the gye starts at : " + strDate);
 
+                //   3.5 계의 상태를 active로 변경한다. (계 활성화)
                 GyeService.updateGye(gye.getId(), "active", strDate);
-
             }
 
             //  4. 계의 상태가 active 라면
@@ -95,15 +91,18 @@ public class CronTable {
 
                 //   4.3 현재 시간의 "일"을 가져온다.
                 LocalDateTime today = LocalDateTime.from(LocalDateTime.now());
+
+                // turn이 2 이상인 member의 순서
                 long nowTurn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths() + 1;
 
-                //   4.4 현재시간의 "일"이 payday 의"일" 보다 클 때
+                //   4.4 오늘날의 "일"이 payday 의 "일" 보다 클 때
                 if (payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue()) {
 
                     //   4.4.1 잔액 조회
                     for (Member mem : members) {
 
                         double balance = GyeService.getBalanceOf(mem.getEmail());
+
                         if (balance < targetMonthFee) {
                             isCollectable = false;
                             break;
@@ -115,41 +114,28 @@ public class CronTable {
                     }
 
                     //   4.4.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
-
-
                     for (Member mem : members) {
                         if (mem.getTurn() == nowTurn) {
                             GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
                         } else {
                             GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                         }
-
                     }
 
                     //   2.2.6 active에서 expired로 상태 변경
-                }
-
-                else {
+                } else {
                     isCollectable = false;
                     continue;
                 }
 
+                //   4.4.3 계 만료
                 if (gye.getPeriod() <= nowTurn) {
-
-//                    LocalDateTime expiredDay = LocalDateTime.now();
-//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//                    String strDate = sdf.format(expiredDay);
-//                    System.out.println("the gye ended at : " + strDate);
-//
-//                    GyeService.updateGye(gye.getId(), "expired", "strDate");
-
 
                     LocalDateTime expiredDay = LocalDateTime.now();
                     String strDate = expiredDay.toString();
                     System.out.println("the gye ended at : " + strDate);
 
                     GyeService.updateGye(gye.getId(), "expired", gye.getPayDay().toString());
-
                 }
             }
 
@@ -158,7 +144,6 @@ public class CronTable {
                 continue;
             }
         }
-
     }
 
 //    // 고정된 지연으로 작업 예약
