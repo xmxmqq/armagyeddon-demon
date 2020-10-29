@@ -134,8 +134,6 @@ public class CronTable {
                     continue;
                 }
 
-                Long monnnn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths();
-
                 if (gye.getPeriod() <= nowTurn) {
 
 //                    LocalDateTime expiredDay = LocalDateTime.now();
