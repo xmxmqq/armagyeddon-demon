@@ -104,57 +104,43 @@ public class CronTable {
                 long nowTurn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths() + 1;
 
                 //   4.4 현재시간의 "일"이 payday 의"일" 보다 클 때
-                if (payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue()) {
+                if (!(payDay.getDayOfMonth() <= today.getDayOfMonth() && payDay.getMonthValue() < today.getMonthValue())) continue;
 
-                    //   4.4.1 잔액 조회
-                    for (Member mem : members) {
-
-                        double balance = GyeService.getBalanceOf(mem.getEmail());
-                        targetMonthFee = ( gye.getType().equals("낙찰계") ?
-                                GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
-                                targetMonthFee );
-                        nowTurn++;
-                        if (balance < targetMonthFee) {
-                            isCollectable = false;
-                            break;
-                        }
-                    }
-
-                    if (!isCollectable) {
+                //   4.4.1 잔액 조회
+                for (Member mem : members) {
+                    double balance = GyeService.getBalanceOf(mem.getEmail());
+                    targetMonthFee = ( gye.getType().equals("낙찰계") ?
+                            GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
+                            targetMonthFee );
+                    if (balance < targetMonthFee) {
+                        isCollectable = false;
                         break;
                     }
-
-                    //   4.4.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
-
-
-                    for (Member mem : members) {
-                        if (mem.getTurn() == nowTurn) {
-                            GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
-                        } else {
-                            GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
-                        }
-
-                    }
-
-                    //   2.2.6 active에서 expired로 상태 변경
                 }
 
-                else {
-                    isCollectable = false;
+                if (!isCollectable) {
                     continue;
                 }
 
-                Long monnnn = Period.between(payDay.toLocalDate(), today.toLocalDate()).toTotalMonths();
+                //   4.4.2 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
+
+
+                for (Member mem : members) {
+                        targetMonthFee = ( gye.getType().equals("낙찰계") ?
+                            GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
+                            targetMonthFee );
+
+                    if (mem.getTurn() == nowTurn) {
+                        GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+                    } else {
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                    }
+
+                }
+
+
 
                 if (gye.getPeriod() <= nowTurn) {
-
-//                    LocalDateTime expiredDay = LocalDateTime.now();
-//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//                    String strDate = sdf.format(expiredDay);
-//                    System.out.println("the gye ended at : " + strDate);
-//
-//                    GyeService.updateGye(gye.getId(), "expired", "strDate");
-
 
                     LocalDateTime expiredDay = LocalDateTime.now();
                     String strDate = expiredDay.toString();
@@ -169,9 +155,9 @@ public class CronTable {
             else if (state.equals("expired")) {
                 continue;
             }
-        }
-
     }
+
+}
 
 //    // 고정된 지연으로 작업 예약
 //    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 10)
