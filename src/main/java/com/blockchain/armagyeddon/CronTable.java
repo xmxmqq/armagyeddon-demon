@@ -102,6 +102,9 @@ public class CronTable {
 
             }
 
+            String sendtoken_email = null;
+            long target_month_money = 0;
+
             //  4. 계의 상태가 active 라면
             if (state.equals("active")) {
 
@@ -142,21 +145,37 @@ public class CronTable {
                             targetMonthFee);
 
                     //저축계
-                    if (mem.getTurn() == 1 && gye.getType().equals("저축계")) {
+                    //if (mem.getTurn() == 1 && gye.getType().equals("저축계")) {
+                    if (mem.getTurn() == nowTurn && gye.getType().equals("저축계")) {
+
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
                     } else if (gye.getType().equals("저축계")) {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                     }
 
                     //낙찰계
-                    if (mem.getTurn() == 1 && gye.getType().equals("낙찰계")) {
+                    //if (mem.getTurn() == 1 && gye.getType().equals("낙찰계")) {
+                    if (gye.getType().equals("낙찰계")) {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
-                        GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
-                    } else if (gye.getType().equals("낙찰계")) {
-                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                        if(mem.getTurn() == nowTurn){
+                            sendtoken_email = mem.getEmail();
+                        }
+                        //public int calculateMoney(Long gyeId, Long userId, int period){
+
+                        //}
+                        //calculateMoney(gye.getId(),mem.getTurn(),mem.getTurn())
+
+                        target_month_money = + targetMonthFee;
+
+
+
                     }
                 }
 
+                if (gye.getType().equals("낙찰계")) {
+                    //GyeService.collectToken(mem.getEmail(), gye.getId(), targetMonthFee);
+                    GyeService.sendToken(gye.getId(), sendtoken_email, String.valueOf(target_month_money));
+                }
 
                 if (gye.getPeriod() <= nowTurn) {
 
