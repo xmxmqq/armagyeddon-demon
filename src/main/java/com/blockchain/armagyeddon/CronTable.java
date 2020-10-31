@@ -122,9 +122,11 @@ public class CronTable {
                 //   4.4.1 잔액 조회
                 for (Member mem : members) {
                     double balance = GyeService.getBalanceOf(mem.getEmail());
+
                     targetMonthFee = ( gye.getType().equals("낙찰계") ?
                             GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
                             targetMonthFee );
+
                     if (balance < targetMonthFee) {
                         isCollectable = false;
                         break;
@@ -147,7 +149,6 @@ public class CronTable {
                     //저축계
                     //if (mem.getTurn() == 1 && gye.getType().equals("저축계")) {
                     if (mem.getTurn() == nowTurn && gye.getType().equals("저축계")) {
-
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
                     } else if (gye.getType().equals("저축계")) {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
@@ -160,20 +161,14 @@ public class CronTable {
                         if(mem.getTurn() == nowTurn){
                             sendtoken_email = mem.getEmail();
                         }
-                        //public int calculateMoney(Long gyeId, Long userId, int period){
 
-                        //}
-                        //calculateMoney(gye.getId(),mem.getTurn(),mem.getTurn())
-
-                        target_month_money = + targetMonthFee;
-
-
+                        target_month_money +=  targetMonthFee;
 
                     }
                 }
 
                 if (gye.getType().equals("낙찰계")) {
-                    //GyeService.collectToken(mem.getEmail(), gye.getId(), targetMonthFee);
+
                     GyeService.sendToken(gye.getId(), sendtoken_email, String.valueOf(target_month_money));
                 }
 
@@ -195,13 +190,6 @@ public class CronTable {
     }
 
 }
-
-//    // 고정된 지연으로 작업 예약
-//    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 10)
-//    public void scheduleFixedDelayTask() {
-//
-//        System.out.println("Fixed delay task - " + System.currentTimeMillis() / 1000);
-//    }
 
     // 고정된 속도로 작업 예약
     @Scheduled(fixedRate = 10000)
