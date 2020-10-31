@@ -401,6 +401,59 @@ public class GyeService {
 
     }
 
+    //이율계산
+    public static long calculateMoney(Long gyeId, String email, int period) {
+        long result = 0;
+
+        try {
+            // BE url을 String으로 받아와서
+            String targetUrl = "http://localhost:8080/calculateMoney?gyeId="+gyeId.toString()+
+                                "&email="+email +
+                                "&period="+Integer.toString(period);
+
+            // URL 설정
+            URL url = new URL(targetUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            // http request 형식 설정
+            con.setRequestMethod("GET");
+            con.setRequestProperty("Authorization", "Bearer " + JWT);
+            con.setRequestProperty("Accept", "application/json");
+
+            // 보내고 결과값 받기
+            int responseCode = con.getResponseCode();
+
+            // error 출력
+            if (responseCode == 400) {
+                System.out.println("400:: 해당 명령을 실행할 수 없음");
+            } else if (responseCode == 401) {
+                System.out.println("401:: X-Auth-Token Header가 잘못됨");
+            } else if (responseCode == 500) {
+                System.out.println("500:: 서버 에러, 문의 필요");
+            } else {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+
+                }
+
+                result = Long.valueOf(sb.toString());
+
+
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+
+    }
+
     public static Gye parseFromJson(JSONObject jsonObject) {
 
         Gye result = new Gye();
@@ -415,9 +468,9 @@ public class GyeService {
             result.setTotalMember(jsonObject.getInt("totalMember"));
             result.setState(jsonObject.getString("state"));
             result.setMaster(jsonObject.getString("master"));
-            if( jsonObject.getString("payDay") == "null"){
+            if (jsonObject.getString("payDay") == "null") {
                 result.setPayDay(null);
-            }else {
+            } else {
                 result.setPayDay(LocalDateTime.parse(jsonObject.getString("payDay")));
             }
 
