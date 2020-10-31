@@ -74,15 +74,25 @@ public class CronTable {
                 //   3.3 계에 있는 멤버들의 잔액이 출금할 수 있는 수량이면, 수송금을 요청한다.
                 for (Member mem : members) {
 
-
-                    if (mem.getTurn() == 1) {
+                    //저축계
+                    if (mem.getTurn() == 1 && gye.getType().equals("저축계")) {
 
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
-
-                    } else {
+                    } else if (gye.getType().equals("저축계")) {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                     }
+
+                    //낙찰계
+                    if (mem.getTurn() == 1 && gye.getType().equals("낙찰계")) {
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                        GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+                    } else if (gye.getType().equals("낙찰계")) {
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                    }
+
                 }
+
+
                 //   3.4 수송금완료 후, payDay 추출, 계의 상태를 active로 변경한다. (계 활성화)
                 LocalDateTime payDay = LocalDateTime.now();
                 String strDate = payDay.toString();
@@ -126,18 +136,26 @@ public class CronTable {
 
 
                 for (Member mem : members) {
-                        targetMonthFee = ( gye.getType().equals("낙찰계") ?
-                            GyeService.calculateMoney(gye.getId(),mem.getEmail(),(int)(nowTurn-1) ):
-                            targetMonthFee );
 
-                    if (mem.getTurn() == nowTurn) {
+                    targetMonthFee = (gye.getType().equals("낙찰계") ?
+                            GyeService.calculateMoney(gye.getId(), mem.getEmail(), (int) (nowTurn - 1)) :
+                            targetMonthFee);
+
+                    //저축계
+                    if (mem.getTurn() == 1 && gye.getType().equals("저축계")) {
                         GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
-                    } else {
+                    } else if (gye.getType().equals("저축계")) {
                         GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
                     }
 
+                    //낙찰계
+                    if (mem.getTurn() == 1 && gye.getType().equals("낙찰계")) {
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                        GyeService.sendToken(gye.getId(), mem.getEmail(), Integer.toString(gye.getTargetMoney()));
+                    } else if (gye.getType().equals("낙찰계")) {
+                        GyeService.collectToken(mem.getEmail(), gye.getId(), Long.toString(targetMonthFee));
+                    }
                 }
-
 
 
                 if (gye.getPeriod() <= nowTurn) {
